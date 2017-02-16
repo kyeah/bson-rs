@@ -339,9 +339,27 @@ impl OrderedDocument {
         self.inner.insert(key, val)
     }
 
+    pub fn insert_all<T: Into<OrderedDocument>>(&mut self, other: T) -> Vec<Bson> {
+        other.into().into_iter()
+            .flat_map(|(k, v)| self.insert_bson(k,v))
+            .collect()
+    }
+
     /// Takes the value of the entry out of the document, and returns it.
     pub fn remove(&mut self, key: &str) -> Option<Bson> {
         self.inner.remove(key)
+    }
+
+    /// Consumes the current document and creates a new one, combining the keys of each document.
+    /// If any keys overlap, the latter document's value is preserved.
+    pub fn merge<T: Into<OrderedDocument>>(self, other: T) -> OrderedDocument {
+        self.into_iter().chain(other.into().into_iter()).collect()
+    }
+
+    /// Consumes the current document and creates a new one, combining the keys of each document.
+    /// If any keys overlap, the former document's value is preserved.
+    pub fn reverse_merge<T: Into<OrderedDocument>>(self, other: T) -> OrderedDocument {
+        other.into().into_iter().chain(self.into_iter()).collect()
     }
 }
 

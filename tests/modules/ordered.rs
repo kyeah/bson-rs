@@ -39,6 +39,24 @@ fn ordered_insert_shorthand() {
 }
 
 #[test]
+fn insert_all() {
+    let mut doc = Document::new();
+    doc.insert("existing".to_owned(), Bson::I32(1));
+
+    let mut doc_2 = Document::new();
+    doc_2.insert("first".to_owned(), Bson::I32(5));
+    doc_2.insert("second".to_owned(), Bson::String("foo".to_owned()));
+
+    let mut expected_doc = Document::new();
+    expected_doc.insert("existing".to_owned(), Bson::I32(1));
+    expected_doc.insert("first".to_owned(), Bson::I32(5));
+    expected_doc.insert("second".to_owned(), Bson::String("foo".to_owned()));
+
+    doc.insert_all(doc_2);
+    assert_eq!(expected_doc, doc);
+}
+
+#[test]
 fn test_getters() {
     let datetime = UTC::now();
     let cloned_dt = datetime.clone();
@@ -120,4 +138,40 @@ fn remove() {
 
     let keys: Vec<_> = doc.iter().map(|(key, _)| key.to_owned()).collect();
     assert_eq!(expected_keys, keys);
+}
+
+#[test]
+fn merge() {
+    let mut doc = Document::new();
+    doc.insert("greeting", Bson::String("hello".to_owned()));
+    doc.insert("farewell", Bson::String("bye".to_owned()));
+
+    let mut other_doc = Document::new();
+    other_doc.insert("greeting", Bson::String("hola".to_owned()));
+    other_doc.insert("numStuff", Bson::I32(1));
+
+    let mut expected_doc = Document::new();
+    expected_doc.insert("farewell", Bson::String("bye".to_owned()));
+    expected_doc.insert("greeting", Bson::String("hola".to_owned()));
+    expected_doc.insert("numStuff", Bson::I32(1));
+
+    assert_eq!(expected_doc, doc.merge(other_doc));
+}
+
+#[test]
+fn reverse_merge() {
+    let mut doc = Document::new();
+    doc.insert("greeting", Bson::String("hello".to_owned()));
+    doc.insert("farewell", Bson::String("bye".to_owned()));
+
+    let mut other_doc = Document::new();
+    other_doc.insert("greeting", Bson::String("hola".to_owned()));
+    other_doc.insert("numStuff", Bson::I32(1));
+
+    let mut expected_doc = Document::new();
+    expected_doc.insert("numStuff", Bson::I32(1));
+    expected_doc.insert("greeting", Bson::String("hello".to_owned()));
+    expected_doc.insert("farewell", Bson::String("bye".to_owned()));
+
+    assert_eq!(expected_doc, doc.reverse_merge(other_doc));
 }

@@ -108,11 +108,20 @@ impl de::Error for DecoderError {
         DecoderError::Unknown(msg.to_string())
     }
 
-    fn invalid_type(_unexp: Unexpected, exp: &Expected) -> DecoderError {
-        DecoderError::InvalidType(exp.to_string())
+    fn invalid_type(unexp: Unexpected, exp: &Expected) -> DecoderError {
+        if let de::Unexpected::Unit = unexp {
+            DecoderError::InvalidType(format_args!("invalid type: null, expected {}", exp).to_string())
+        } else {
+            DecoderError::InvalidType(format_args!("invalid type: {}, expected {}", unexp, exp).to_string())
+}
     }
 
-    fn invalid_value(_unexp: Unexpected, exp: &Expected) -> DecoderError {
+    fn invalid_value(unexp: Unexpected, exp: &Expected) -> DecoderError {
+        if let de::Unexpected::Unit = unexp {
+            DecoderError::InvalidType(format_args!("invalid value: null, expected {}", exp).to_string())
+        } else {
+            DecoderError::InvalidType(format_args!("invalid value: {}, expected {}", unexp, exp).to_string())
+}
         DecoderError::InvalidValue(exp.to_string())
     }
 
